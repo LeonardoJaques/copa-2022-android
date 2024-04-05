@@ -1,5 +1,6 @@
 package me.dio.copa.catar.features
 
+import android.content.res.Resources.NotFoundException
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
@@ -13,7 +14,6 @@ import me.dio.copa.catar.domain.model.MatchDomain
 import me.dio.copa.catar.domain.usecase.DisableNotificationUseCase
 import me.dio.copa.catar.domain.usecase.EnableNotificationUseCase
 import me.dio.copa.catar.domain.usecase.GetMatchesUseCase
-import me.dio.copa.catar.remote.NotFoundException
 import me.dio.copa.catar.remote.UnexpectedException
 import javax.inject.Inject
 
@@ -21,7 +21,7 @@ import javax.inject.Inject
 class MainViewModel @Inject constructor(
     private val getMatchesUseCase: GetMatchesUseCase,
     private val disableNotificationUseCase: DisableNotificationUseCase,
-    private val enableNotificationUseCase: EnableNotificationUseCase,
+    private val enableNotificationUseCase: EnableNotificationUseCase
 ) : BaseViewModel<MainUiState, MainUiAction>(MainUiState()) {
 
     init {
@@ -32,11 +32,15 @@ class MainViewModel @Inject constructor(
         getMatchesUseCase()
             .flowOn(Dispatchers.Main)
             .catch {
-                when(it) {
-                    is NotFoundException ->
-                        sendAction(MainUiAction.MatchesNotFound(it.message ?: "Erro sem mensagem"))
+                when (it) {
+                    is NotFoundException -> sendAction(
+                        MainUiAction.MatchesNotFound(
+                            it.message ?: "Erro sem mensagem"
+                        )
+                    )
+
                     is UnexpectedException ->
-                        sendAction(MainUiAction.Unexpected)
+                        sendAction(MainUiAction.UnexpectedError)
                 }
             }.collect { matches ->
                 setState {
@@ -65,12 +69,15 @@ class MainViewModel @Inject constructor(
 }
 
 data class MainUiState(
-    val matches: List<MatchDomain> = emptyList()
+    val isLoading: Boolean = false,
+    val matches: List<Match> = emptyList(),
+    val error: String = ""
 )
 
 sealed interface MainUiAction {
-    object Unexpected: MainUiAction
+    object UnexpectedError : MainUiAction
     data class MatchesNotFound(val message: String) : MainUiAction
     data class EnableNotification(val match: MatchDomain) : MainUiAction
     data class DisableNotification(val match: MatchDomain) : MainUiAction
+
 }
