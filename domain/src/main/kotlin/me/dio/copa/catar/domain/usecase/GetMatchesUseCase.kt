@@ -7,7 +7,7 @@ import javax.inject.Inject
 
 class GetMatchesUseCase @Inject constructor(
     private val repository: MatchesRepository
-){
+) {
     suspend operator fun invoke(): Flow<List<Match>> {
         return repository.getMatches()
     }

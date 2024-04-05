@@ -7,6 +7,6 @@ class EnableNotificationUseCase @Inject constructor(
     private val repository: MatchesRepository
 ){
     suspend operator fun invoke(id: String) {
-      repository.enableNotificationFor(id)
+        repository.enableNotificationFor(id)
     }
 }

@@ -9,4 +9,5 @@ class DisableNotificationUseCase @Inject constructor(
     suspend operator fun invoke(id: String) {
         repository.disableNotificationFor(id)
     }
+
 }
